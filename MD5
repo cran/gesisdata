@@ -1,0 +1,13 @@
+19f1f5fc850fe35a3c50418fe9224456 *DESCRIPTION
+23b62b955b17a01be9b85d503535056d *LICENSE
+c674945840980ff29a91482d16f53b2f *NAMESPACE
+96e1dff4835bb1105072e6f90269b77c *NEWS.md
+8dbb99c526136651d91b7c936e1b4522 *R/gesis_download.R
+ec71c114cab429ecc97cefa7f376e23d *README.md
+bdb14914ad3751c80937a8bfb2cae202 *build/vignette.rds
+9dad9c1f90d0f5032181eebe8416ca0d *inst/doc/gesisdata-vignette.R
+a13828fcf7cfc8622d36b17c4e3da697 *inst/doc/gesisdata-vignette.Rmd
+53e3f2deb3ecf80b15314ae961f4d5d9 *inst/doc/gesisdata-vignette.html
+0d2d29f985b6184340251f49eba6a510 *man/gesis_download.Rd
+106a72dd5f54e050d4f6f50112ddb591 *vignettes/gesis_politbarometer.png
+a13828fcf7cfc8622d36b17c4e3da697 *vignettes/gesisdata-vignette.Rmd
