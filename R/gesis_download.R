@@ -48,12 +48,14 @@
 #' }
 #' 
 #' @import RSelenium
-#' @importFrom stringr str_detect str_subset
+#' @importFrom dplyr case_when
+#' @importFrom foreign read.dta
 #' @importFrom magrittr '%>%'
-#' @importFrom rio convert
+#' @importFrom netstat free_port
+#' @importFrom rio import export
+#' @importFrom stringr str_detect str_subset
 #' @importFrom tools file_path_sans_ext
 #' @importFrom utils unzip
-#' @importFrom dplyr case_when
 #' 
 #' @export
 gesis_download <- function(file_id, 
@@ -99,7 +101,7 @@ gesis_download <- function(file_id,
         TRUE ~ "for scientific research (incl. doctorate)"
     )
     
-    # build path to chrome's default download directory
+    # build path to firefox's default download directory
     if (Sys.info()[["sysname"]]=="Linux") {
         default_dir <- file.path("home", Sys.info()[["user"]], "Downloads")
     } else {
@@ -111,7 +113,10 @@ gesis_download <- function(file_id,
     
     # initialize driver
     if(msg) message("Initializing RSelenium driver")
-    rD <- rsDriver(browser = "chrome", verbose = TRUE)
+    rD <- rsDriver(browser="firefox", 
+                   port = free_port(),
+                   verbose = FALSE,
+                   chromever = NULL)
     remDr <- rD[["client"]]
     
     # sign in
@@ -137,12 +142,14 @@ gesis_download <- function(file_id,
         Sys.sleep(delay)
         
         # switch to English
-        remDr$findElement(using = "partial link text", "Englis")$clickElement()
+        if (try(unlist(remDr$findElement(using = "partial link text", "Englis")$getElementAttribute('id')), silent = TRUE) =="") {
+            remDr$findElement(using = "partial link text", "Englis")$clickElement()
+        }
         Sys.sleep(delay)
         
         # download codebook, if available
-        if (try(unlist(remDr$findElement(using = "partial link text", "Codebook")$getElementAttribute('id')), silent = TRUE) == "") {
-            remDr$findElement(using = "partial link text", "Codebook")$clickElement()
+        if (try(unlist(remDr$findElement(using = "link text", "Codebook")$getElementAttribute('id')), silent = TRUE) == "") {
+            remDr$findElement(using = "link text", "Codebook")$clickElement()
         }
         Sys.sleep(delay)
         
@@ -191,10 +198,18 @@ gesis_download <- function(file_id,
         if (convert == TRUE) {
             for (i in seq_along(data_files)) {
                 data_file <- data_files[i]
-                rio::convert(file.path(download_dir, item, data_file),
-                             paste0(tools::file_path_sans_ext(file.path(download_dir,
-                                                                        item,
-                                                                        basename(data_file))), ".RData"))
+                tryCatch(rio::import(file.path(download_dir, item, data_file),
+                                           convert.factors = FALSE) %>%
+                             rio::export(paste0(tools::file_path_sans_ext(file.path(download_dir,
+                                                                             item,
+                                                                             basename(data_file))), ".RData")),
+                         error = function(c) suppressWarnings(
+                             foreign::read.dta(file.path(download_dir, item, data_file),
+                                               convert.factors = FALSE) %>%
+                                 rio::export(paste0(tools::file_path_sans_ext(file.path(download_dir,
+                                                                                 item,
+                                                                                 basename(data_file))), ".RData")))
+                )
             }
         }
     }
